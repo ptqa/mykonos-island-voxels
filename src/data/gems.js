@@ -1,0 +1,80 @@
+export const GEM_TYPES = Object.freeze({
+    cobalt: Object.freeze({
+        id: 'cobalt',
+        name: 'Cobalt glass',
+        shortName: 'Cobalt',
+        effect: 'Chain',
+        color: '#2e7ad8',
+        deepColor: '#134680',
+        paleColor: '#d6e6f6',
+        description: 'Forks through nearby invaders with sea-glass arcs.',
+    }),
+    amber: Object.freeze({
+        id: 'amber',
+        name: 'Sun amber',
+        shortName: 'Amber',
+        effect: 'Splash',
+        color: '#f0a93a',
+        deepColor: '#b86524',
+        paleColor: '#ffe2a8',
+        description: 'Bursts into warm tile-dust around the target.',
+    }),
+    jade: Object.freeze({
+        id: 'jade',
+        name: 'Olive jade',
+        shortName: 'Jade',
+        effect: 'Poison',
+        color: '#6f9f58',
+        deepColor: '#3d7355',
+        paleColor: '#dcebcf',
+        description: 'Leaves a bitter olive pollen that ignores armor.',
+    }),
+    opal: Object.freeze({
+        id: 'opal',
+        name: 'Moon opal',
+        shortName: 'Opal',
+        effect: 'Slow',
+        color: '#8ed4e8',
+        deepColor: '#3f8aa4',
+        paleColor: '#d9f2f7',
+        description: 'Washes enemies in cooling harbor ripples.',
+    }),
+    coral: Object.freeze({
+        id: 'coral',
+        name: 'Coral ruby',
+        shortName: 'Coral',
+        effect: 'Critical',
+        color: '#d85b76',
+        deepColor: '#9d3150',
+        paleColor: '#ffd4dd',
+        description: 'Builds toward precise sun-flash critical hits.',
+    }),
+});
+
+export const GEM_ORDER = Object.freeze(['cobalt', 'amber', 'jade', 'opal', 'coral']);
+
+export const GEM_GRADES = Object.freeze({
+    1: Object.freeze({ grade: 1, cost: 120, damageMult: 1.0, specialMult: 1.0, label: 'I' }),
+    2: Object.freeze({ grade: 2, cost: 270, damageMult: 2.1, specialMult: 1.7, label: 'II' }),
+    3: Object.freeze({ grade: 3, cost: 610, damageMult: 4.4, specialMult: 2.9, label: 'III' }),
+    4: Object.freeze({ grade: 4, cost: 1370, damageMult: 9.2, specialMult: 4.9, label: 'IV' }),
+    5: Object.freeze({ grade: 5, cost: 3080, damageMult: 19.3, specialMult: 8.3, label: 'V' }),
+});
+
+export const TOWER_RULES = Object.freeze({
+    towerAssetId: 'well',
+    towerName: 'Watch plinth',
+    towerCost: 90,
+    baseDamage: 13,
+    baseRange: 4.05,
+    rangePerGrade: 0.16,
+    baseCooldown: 0.92,
+    cooldownPerGrade: 0.035,
+    sellRefund: 0.45,
+    startingMana: 720,
+    startingMaxMana: 1000,
+    passiveManaPerSecond: 5.5,
+    poolMaxBonus: 200,
+    poolIncomeBonus: 0.08,
+    poolCosts: Object.freeze([350, 510, 740, 1080, 1560, 2260, 3280, 4760, 6900, 10000]),
+});

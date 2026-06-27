@@ -99,6 +99,21 @@ export class TileMap {
         this.objectsVersion++;
     }
 
+    resize(width, height) {
+        if (this.width === width && this.height === height) {
+            this.clearAll();
+            return;
+        }
+        this.width = width;
+        this.height = height;
+        this.terrain = new Array(width * height).fill(null);
+        this._occupancy = new Array(width * height).fill(null);
+        this.objects.length = 0;
+        this._nextId = 1;
+        this.terrainVersion++;
+        this.objectsVersion++;
+    }
+
     serialize() {
         return {
             width: this.width,

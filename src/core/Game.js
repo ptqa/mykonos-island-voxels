@@ -16,6 +16,9 @@ import { ASSET_INDEX, ASSET_MANIFEST } from '../assets/assetManifest.js';
 import { SaveSystem } from '../storage/SaveSystem.js';
 import { cellToScreen } from '../grid/IsoGrid.js';
 import { playPlacementFor } from '../ui/Audio.js';
+import { AEGEAN_DEFENSE_LEVEL } from '../data/levels.js';
+import { TOWER_RULES } from '../data/gems.js';
+import { DefenseSystem } from '../gameplay/DefenseSystem.js';
 
 export class Game {
     constructor(canvas, ui = null) {
@@ -25,6 +28,8 @@ export class Game {
         this.renderer = new Renderer(canvas, this.camera, this.tileMap);
         this.placement = new PlacementSystem(this.tileMap);
         this.input = new InputManager(canvas, this.camera, this);
+        this.defense = new DefenseSystem(this, AEGEAN_DEFENSE_LEVEL);
+        this.renderer.gameplay = this.defense;
 
         // Any camera mutation (pan/zoom/recenter) needs the next frame
         // re-rendered. The renderer itself is otherwise idle.
@@ -35,6 +40,8 @@ export class Game {
         this.category = 'terrain';
         this.selectedAssetId = ASSET_MANIFEST.find(a => a.category === 'terrain').id;
         this.ui = ui;
+        this._lastFrame = performance.now();
+        this._lastUiRefresh = 0;
 
         // Preview-only flip state for the current selection. Toggled by the
         // user (H / V) before commit; the values are baked into the
@@ -128,7 +135,7 @@ export class Game {
 
     save() {
         const ok = SaveSystem.save(this.tileMap, this.camera);
-        this.ui?.showToast(ok ? 'Saved your island' : 'Save failed');
+        this.ui?.showToast(ok ? 'Saved the current island layout' : 'Save failed');
     }
 
     load() {
@@ -138,11 +145,18 @@ export class Game {
     }
 
     reset() {
-        this.tileMap.clearAll();
+        this.defense.loadLevel();
         SaveSystem.clear();
         this._centerCamera();
         this.renderer.markDirty();
-        this.ui?.showToast('World reset');
+        this.ui?.showToast('Defense restarted');
+        this.ui?.update();
+    }
+
+    loadAuthoredLevel() {
+        this.defense.loadLevel();
+        this._centerCamera();
+        this.renderer.markDirty();
     }
 
     /**
@@ -188,11 +202,11 @@ export class Game {
         this.renderer.hoverCell = cell;
         if (this.tool === 'erase') {
             this.renderer.previewAssetId = null;
-            this.renderer.previewValid = !!this.tileMap.objectAt(cell.gx, cell.gy)
-                || !!this.tileMap.getTerrain(cell.gx, cell.gy);
+            this.renderer.previewValid = !!this.defense.towerAt(cell.gx, cell.gy);
         } else if (this.tool === 'place') {
-            this.renderer.previewAssetId = this.selectedAssetId;
-            this.renderer.previewValid = this.placement.canPlace(this.selectedAssetId, cell.gx, cell.gy);
+            const towerHere = this.defense.towerAt(cell.gx, cell.gy);
+            this.renderer.previewAssetId = towerHere ? null : TOWER_RULES.towerAssetId;
+            this.renderer.previewValid = !!towerHere || this.defense.canBuildAt(cell.gx, cell.gy);
         } else {
             this.renderer.previewAssetId = null;
             this.renderer.previewValid = true;
@@ -206,50 +220,28 @@ export class Game {
     onPrimaryClick(gx, gy) {
         if (!this.tileMap.inBounds(gx, gy)) return;
         if (this.tool === 'erase') {
-            // Capture what's about to be removed so we can pick the right
-            // SFX (water erase splashes, everything else thuds).
-            const objHere = this.tileMap.objectAt(gx, gy);
-            const terrainHere = this.tileMap.getTerrain(gx, gy);
-            const targetId = objHere ? objHere.assetId : terrainHere;
-            if (this.placement.erase(gx, gy)) {
+            if (this.defense.sellTowerAt(gx, gy)) {
                 this.renderer.markDirty();
-                playPlacementFor(targetId);
+                playPlacementFor(TOWER_RULES.towerAssetId);
+            } else {
+                this.ui?.showToast('Only prism plinths can be sold');
             }
         } else if (this.tool === 'place') {
-            const result = this.placement.place(this.selectedAssetId, gx, gy, {
-                flipH: this.flipH,
-                flipV: this.flipV,
-            });
-            if (result?.kind === 'object') {
-                const o = result.object;
-                this.renderer.spawnAnim(`obj-${o.id}`, {
-                    gx: o.gx,
-                    gy: o.gy,
-                    w: o.footprint?.w ?? 1,
-                    d: o.footprint?.d ?? 1,
-                });
-                playPlacementFor(o.assetId);
-            } else if (result?.kind === 'terrain') {
-                this.renderer.spawnAnim(`t-${result.gx},${result.gy}`, {
-                    gx: result.gx,
-                    gy: result.gy,
-                    w: 1,
-                    d: 1,
-                });
-                playPlacementFor(result.assetId);
+            if (this.defense.selectTowerAt(gx, gy)) return;
+            if (this.defense.buildTowerAt(gx, gy)) {
+                playPlacementFor(TOWER_RULES.towerAssetId);
             }
         }
     }
 
     onSecondaryClick(gx, gy) {
-        // Right click always erases.
+        // Right click sells player-built prism plinths and leaves scenery intact.
         if (!this.tileMap.inBounds(gx, gy)) return;
-        const objHere = this.tileMap.objectAt(gx, gy);
-        const terrainHere = this.tileMap.getTerrain(gx, gy);
-        const targetId = objHere ? objHere.assetId : terrainHere;
-        if (this.placement.erase(gx, gy)) {
+        if (this.defense.sellTowerAt(gx, gy)) {
             this.renderer.markDirty();
-            playPlacementFor(targetId);
+            playPlacementFor(TOWER_RULES.towerAssetId);
+        } else {
+            this.defense.clearSelection();
         }
     }
 
@@ -291,11 +283,19 @@ export class Game {
     /* ── Frame loop ───────────────────────────────────────────── */
 
     _loop() {
+        const now = performance.now();
+        const dt = (now - this._lastFrame) / 1000;
+        this._lastFrame = now;
+        if (this.defense.update(dt)) this.renderer.markDirty();
         // The renderer skips its own work when nothing has changed and
         // there are no animations running, so this loop is effectively
         // free at idle. We still keep `requestAnimationFrame` ticking so
         // we resume instantly when input or animations resume.
         this.renderer.draw();
+        if (this.ui && now - this._lastUiRefresh > 160) {
+            this.ui.update();
+            this._lastUiRefresh = now;
+        }
         requestAnimationFrame(this._loop);
     }
 }

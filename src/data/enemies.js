@@ -1,0 +1,42 @@
+export const ENEMY_TYPES = Object.freeze({
+    drifter: Object.freeze({
+        id: 'drifter',
+        name: 'Brine drifter',
+        role: 'Normal',
+        color: '#3f8aa4',
+        shell: '#d9f2f7',
+        speedTag: 'steady',
+    }),
+    runner: Object.freeze({
+        id: 'runner',
+        name: 'Skiff runner',
+        role: 'Fast',
+        color: '#2e7ad8',
+        shell: '#d6e6f6',
+        speedTag: 'fast',
+    }),
+    bulwark: Object.freeze({
+        id: 'bulwark',
+        name: 'Salt bulwark',
+        role: 'Armored',
+        color: '#8d8878',
+        shell: '#ede4d2',
+        speedTag: 'armored',
+    }),
+    swarm: Object.freeze({
+        id: 'swarm',
+        name: 'Foamling swarm',
+        role: 'Swarm',
+        color: '#6f9f58',
+        shell: '#dcebcf',
+        speedTag: 'many',
+    }),
+    colossus: Object.freeze({
+        id: 'colossus',
+        name: 'Harbor colossus',
+        role: 'Giant',
+        color: '#c4622e',
+        shell: '#ffe2a8',
+        speedTag: 'giant',
+    }),
+});

@@ -8,7 +8,7 @@
 
 export const CONFIG = Object.freeze({
     grid: {
-        width: 14,
+        width: 18,
         height: 14,
     },
 
@@ -40,7 +40,7 @@ export const CONFIG = Object.freeze({
         OBJECT:  2,
     }),
 
-    storageKey: 'mykonos-island-voxels.save.v1',
+    storageKey: 'mykonos-island-voxels.defense.v1',
 
     // Bright Mediterranean palette used by procedurally-generated assets.
     palette: Object.freeze({

@@ -97,7 +97,7 @@ export class InputManager {
         this._lastY = sy;
         this._pressedButton = e.button;
 
-        const canBrush = this.game.tool !== 'pan'
+        const canBrush = this.game.tool === 'erase'
             && (e.button === 0 || e.button === 2)
             && !e.shiftKey;
         if (canBrush) {
@@ -385,17 +385,18 @@ export class InputManager {
             || e.target instanceof HTMLTextAreaElement) return;
         const k = e.key.toLowerCase();
         const map = {
-            '1': () => this.game.setCategory('terrain'),
-            '2': () => this.game.setCategory('nature'),
-            '3': () => this.game.setCategory('props'),
-            '4': () => this.game.setCategory('water'),
-            '5': () => this.game.setCategory('buildings'),
+            '1': () => this.game.defense.setGemType('cobalt'),
+            '2': () => this.game.defense.setGemType('amber'),
+            '3': () => this.game.defense.setGemType('jade'),
+            '4': () => this.game.defense.setGemType('opal'),
+            '5': () => this.game.defense.setGemType('coral'),
+            ' ': () => this.game.defense.startNextWave(),
+            'f': () => this.game.defense.upgradeSelectedTower(),
+            'q': () => this.game.defense.cycleSpeed(),
+            'p': () => this.game.defense.togglePause(),
             'e': () => this.game.setTool(this.game.tool === 'erase' ? 'place' : 'erase'),
-            'g': () => this.game.toggleGrid(),
-            's': () => this.game.save(),
+            'g': () => this.game.defense.toggleRangeOverlay(),
             'r': () => this.game.reset(),
-            'h': () => this.game.toggleFlipH(),
-            'v': () => this.game.toggleFlipV(),
         };
         if (map[k]) {
             e.preventDefault();

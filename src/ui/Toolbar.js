@@ -9,21 +9,21 @@ import { playUiClick } from './Audio.js';
 
 const TOOL_ICONS = {
     place: drawPlaceIcon,
-    fill:  drawFillIcon,
+    call:  drawCallIcon,
+    pool:  drawPoolIcon,
+    speed: drawSpeedIcon,
     erase: drawEraseIcon,
     pan:   drawPanIcon,
-    grid:  drawGridIcon,
-    save:  drawSaveIcon,
     reset: drawResetIcon,
 };
 
 const TOOL_BUTTONS = [
-    { id: 'place',  label: 'Place'  },
-    { id: 'fill',   label: 'Fill'   },
-    { id: 'erase',  label: 'Erase'  },
+    { id: 'place',  label: 'Build'  },
+    { id: 'call',   label: 'Wave'   },
+    { id: 'pool',   label: 'Pool'   },
+    { id: 'speed',  label: 'Speed'  },
+    { id: 'erase',  label: 'Sell'   },
     { id: 'pan',    label: 'Pan'    },
-    { id: 'grid',   label: 'Grid'   },
-    { id: 'save',   label: 'Save'   },
     { id: 'reset',  label: 'Reset'  },
 ];
 
@@ -78,24 +78,24 @@ export class Toolbar {
         playUiClick();
         switch (id) {
             case 'place': this.game.setTool('place'); break;
+            case 'call':  this.game.defense.startNextWave(); break;
+            case 'pool':  this.game.defense.upgradePool(); break;
+            case 'speed': this.game.defense.cycleSpeed(); break;
             case 'erase': this.game.setTool('erase'); break;
             case 'pan':   this.game.setTool('pan');   break;
-            case 'grid':  this.game.toggleGrid();     break;
-            case 'save':  this.game.save();           break;
             case 'reset': this.game.reset();          break;
-            case 'fill':  this.game.fillGrass();      break;
         }
     }
 
     update() {
         const tool = this.game.tool;
-        const grid = this.game.renderer.showGrid;
         for (const [id, btn] of this.buttons) {
             btn.classList.toggle('active',
                 (id === 'place' && tool === 'place')
-             || (id === 'erase' && tool === 'erase')
-             || (id === 'pan'   && tool === 'pan')
-             || (id === 'grid'  && grid)
+              || (id === 'erase' && tool === 'erase')
+              || (id === 'pan'   && tool === 'pan')
+             || (id === 'speed' && this.game.defense.speed > 1)
+             || (id === 'call'  && this.game.defense.waveActive)
             );
         }
     }

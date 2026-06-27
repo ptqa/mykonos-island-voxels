@@ -29,6 +29,7 @@ import * as A from './assetDefinitions.js';
 const T = (id, name, foot = { w: 1, d: 1 }) => ({
     id, name, category: 'terrain', footprint: foot, kind: 'terrain',
     filename: `${id}.png`, sizeScale: 1,
+    sourcePatchScale: 0.30,
 });
 const O = (category, defaultScale = 1) =>
     (id, name, foot = { w: 1, d: 1 }, sizeScale = defaultScale) => ({

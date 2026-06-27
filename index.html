@@ -2,19 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1b5ba8" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>Mykonos Island Voxels</title>
+    <title>Aegean Prism Defense</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23fbf6ec'/%3E%3Cpath d='M32 8 50 32 32 56 14 32Z' fill='%231b5ba8'/%3E%3Cpath d='M32 17 42 32 32 47 22 32Z' fill='%236ec8e0'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
     <div id="loading-screen">
         <div class="loading-card">
             <div class="loading-logo"></div>
-            <div class="loading-title">Mykonos Island Voxels</div>
-            <div class="loading-sub">Generating asset pack…</div>
+            <div class="loading-title">Aegean Prism Defense</div>
+            <div class="loading-sub">Loading the harbor diorama…</div>
             <div class="loading-bar"><div class="loading-fill" id="loading-fill"></div></div>
             <div class="loading-status" id="loading-status">warming the kilns</div>
         </div>
@@ -26,32 +27,16 @@
         <header id="title-card">
             <div class="title-logo"></div>
             <div class="title-text">
-                <h1>Mykonos Island Voxels</h1>
-                <p>Build beautiful Mediterranean voxel worlds</p>
+                <h1>Aegean Prism Defense</h1>
+                <p>Gemcraft-inspired island tower defense</p>
             </div>
         </header>
 
         <aside id="toolbar"></aside>
 
-        <section id="palette">
-            <nav id="palette-tabs"></nav>
-            <div id="palette-grid"></div>
-        </section>
+        <section id="palette" aria-label="Prism forge"></section>
 
-        <section id="hud">
-            <div class="hud-row">
-                <div class="hud-clock">
-                    <span class="sun-icon"></span>
-                    <span id="hud-time">10:42</span>
-                </div>
-            </div>
-            <div class="hud-toggles">
-                <label class="toggle"><span>Shadows</span><input type="checkbox" id="toggle-ao" checked /><span class="switch"></span></label>
-                <label class="toggle"><span>Grid</span><input type="checkbox" id="toggle-grid" /><span class="switch"></span></label>
-                <label class="toggle"><span>Borders</span><input type="checkbox" id="toggle-borders" checked /><span class="switch"></span></label>
-            </div>
-            <div class="hud-layers">Layers</div>
-        </section>
+        <section id="hud" aria-label="Defense status"></section>
 
         <details id="instructions" aria-label="Controls help">
             <summary class="ins-summary">
@@ -60,25 +45,22 @@
                 <span class="ins-summary-hint" aria-hidden="true">click to open</span>
             </summary>
             <div class="ins-grid ins-grid--mouse">
-                <span class="key">Click</span><span>Place selected asset</span>
-                <span class="key">Drag</span><span>Brush place across cells</span>
-                <span class="key">Right click</span><span>Erase</span>
-                <span class="key">Right drag</span><span>Brush erase</span>
+                <span class="key">Click pad</span><span>Build or select a prism plinth</span>
+                <span class="key">Right click</span><span>Sell plinth / clear selection</span>
                 <span class="key">Shift drag</span><span>Pan camera</span>
                 <span class="key">Wheel</span><span>Zoom</span>
-                <span class="key">H / V</span><span>Flip preview</span>
-                <span class="key">E</span><span>Toggle erase mode</span>
-                <span class="key">G</span><span>Toggle grid</span>
-                <span class="key">1-5</span><span>Switch categories</span>
-                <span class="key">S / R</span><span>Save / reset</span>
+                <span class="key">1-5</span><span>Select prism family</span>
+                <span class="key">Space</span><span>Call next wave</span>
+                <span class="key">F</span><span>Combine selected gem</span>
+                <span class="key">Q / P</span><span>Speed / pause</span>
+                <span class="key">G / R</span><span>Ranges / restart</span>
             </div>
             <div class="ins-grid ins-grid--touch">
-                <span class="key">Tap</span><span>Place selected asset</span>
-                <span class="key">Drag</span><span>Brush place across cells</span>
-                <span class="key">Long-press</span><span>Erase tile under finger</span>
+                <span class="key">Tap pad</span><span>Build or select a prism plinth</span>
+                <span class="key">Long-press</span><span>Sell plinth under finger</span>
                 <span class="key">Pinch</span><span>Zoom in / out</span>
                 <span class="key">Two-finger drag</span><span>Pan camera</span>
-                <span class="key">Tabs</span><span>Switch asset categories</span>
+                <span class="key">Forge</span><span>Select gem family</span>
             </div>
         </details>
 

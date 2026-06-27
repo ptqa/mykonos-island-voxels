@@ -185,6 +185,72 @@ function drawFillIcon(ctx) {
     ctx.restore();
 }
 
+function drawCallIcon(ctx) {
+    ctx.save();
+    ctx.translate(22, 22);
+    ctx.fillStyle = INK;
+    ctx.beginPath();
+    ctx.moveTo(-10, 8);
+    ctx.lineTo(9, 8);
+    ctx.lineTo(6, -3);
+    ctx.lineTo(-8, -3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = PAPER;
+    ctx.beginPath();
+    ctx.moveTo(-5, -6);
+    ctx.lineTo(7, -1);
+    ctx.lineTo(-5, 4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = INK;
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-11, 12);
+    ctx.quadraticCurveTo(-4, 15, 4, 12);
+    ctx.stroke();
+    ctx.restore();
+}
+
+function drawPoolIcon(ctx) {
+    ctx.save();
+    ctx.translate(22, 22);
+    ctx.fillStyle = INK;
+    ctx.beginPath();
+    ctx.ellipse(0, -7, 10, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(-10, -7, 20, 16);
+    ctx.beginPath();
+    ctx.ellipse(0, 9, 10, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = PAPER;
+    ctx.beginPath();
+    ctx.ellipse(0, -7, 7, 2.4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#6ec8e0';
+    ctx.beginPath();
+    ctx.ellipse(0, -6, 5.5, 1.5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawSpeedIcon(ctx) {
+    ctx.save();
+    ctx.translate(22, 22);
+    ctx.fillStyle = INK;
+    for (let i = 0; i < 3; i++) {
+        const x = -9 + i * 8;
+        ctx.beginPath();
+        ctx.moveTo(x, -10);
+        ctx.lineTo(x + 9, 0);
+        ctx.lineTo(x, 10);
+        ctx.closePath();
+        ctx.fill();
+    }
+    ctx.restore();
+}
+
 function drawEraseIcon(ctx) {
     // Classic pencil eraser — pink rubber tip + metal collar +
     // cobalt body. Tilted like a real eraser caught mid-stroke, with

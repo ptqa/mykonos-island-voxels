@@ -33,7 +33,7 @@ export function trimTransparent(image) {
     const tmp = document.createElement('canvas');
     tmp.width = w0;
     tmp.height = h0;
-    const tctx = tmp.getContext('2d');
+    const tctx = tmp.getContext('2d', { willReadFrequently: true });
     tctx.drawImage(image, 0, 0);
 
     let data;
@@ -64,7 +64,7 @@ export function trimTransparent(image) {
     const out = document.createElement('canvas');
     out.width = cw;
     out.height = ch;
-    out.getContext('2d').drawImage(tmp, minX, minY, cw, ch, 0, 0, cw, ch);
+    out.getContext('2d', { willReadFrequently: true }).drawImage(tmp, minX, minY, cw, ch, 0, 0, cw, ch);
     return { canvas: out, width: cw, height: ch };
 }
 
@@ -87,7 +87,7 @@ function detectVisualBase(trimmedCanvas) {
     const h = trimmedCanvas.height;
     let data;
     try {
-        data = trimmedCanvas.getContext('2d').getImageData(0, 0, w, h).data;
+        data = trimmedCanvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data;
     } catch {
         return null;
     }
@@ -140,7 +140,7 @@ function detectTopDiamondGeometry(canvas) {
     const w = canvas.width;
     const h = canvas.height;
     let data;
-    try { data = canvas.getContext('2d').getImageData(0, 0, w, h).data; }
+    try { data = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data; }
     catch { return null; }
 
     const lefts  = new Int32Array(h);
@@ -215,7 +215,7 @@ function sampleSideWallColors(canvas, geo) {
     const w = canvas.width;
     const h = canvas.height;
     let data;
-    try { data = canvas.getContext('2d').getImageData(0, 0, w, h).data; }
+    try { data = canvas.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, w, h).data; }
     catch { return null; }
 
     const center = Math.round((geo.xMin + geo.xMax) / 2);
@@ -302,7 +302,7 @@ function paintCleanSideWalls(ctx, isoW, isoH, sideH, colors) {
  * cell-in-front via the renderer's painter's-order pass, and the outer
  * front-edge cells expose a clean continuous slab.
  */
-function renderTerrainTile(sourceCanvas, geo, isoW, isoH) {
+function renderTerrainTile(sourceCanvas, geo, isoW, isoH, sourcePatchScale = 1) {
     const colors = sampleSideWallColors(sourceCanvas, geo);
     // Use the source's actual side-wall thickness (scaled to cell) but
     // cap it at the iso height so a back-row cell's slab is fully
@@ -328,9 +328,15 @@ function renderTerrainTile(sourceCanvas, geo, isoW, isoH) {
     ctx.lineTo(0,        isoH / 2);
     ctx.closePath();
     ctx.clip();
+
+    const patchScale = Math.max(0.05, Math.min(1, sourcePatchScale || 1));
+    const srcW = geo.diamondWidth * patchScale;
+    const srcH = geo.diamondHeight * patchScale;
+    const srcX = geo.xMin + (geo.diamondWidth - srcW) / 2;
+    const srcY = geo.topY + (geo.diamondHeight - srcH) / 2;
     ctx.drawImage(
         sourceCanvas,
-        geo.xMin, geo.topY, geo.diamondWidth, geo.diamondHeight,
+        srcX, srcY, srcW, srcH,
         0, 0, isoW, isoH,
     );
     ctx.restore();
@@ -438,6 +444,7 @@ export function imageToAsset(image, footprint, kind, options = {}) {
     const tileLike  = options.tileLike === true;
     const fitCell   = options.fitCell === true;
     const flatBase  = options.flatBase === true;
+    const sourcePatchScale = options.sourcePatchScale ?? 1;
 
     const trimmed = trimTransparent(image);
     const cellIsoW = (footprint.w + footprint.d) * TW / 2;
@@ -455,7 +462,7 @@ export function imageToAsset(image, footprint, kind, options = {}) {
     if (kind === 'terrain' && tileLike) {
         const geo = detectTopDiamondGeometry(trimmed.canvas);
         if (geo) {
-            const tile = renderTerrainTile(trimmed.canvas, geo, cellIsoW, cellIsoH);
+            const tile = renderTerrainTile(trimmed.canvas, geo, cellIsoW, cellIsoH, sourcePatchScale);
             return {
                 canvas: tile.canvas,
                 width:  tile.canvas.width,

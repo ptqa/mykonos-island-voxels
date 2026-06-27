@@ -248,193 +248,253 @@ html, body {
     letter-spacing: 0.01em;
 }
 
-/* ── Palette ──────────────────────────────────────────────────── */
+/* ── Prism forge ──────────────────────────────────────────────── */
 
 #palette {
     position: fixed;
-    right: 12px;
-    top: 12px;
-    bottom: 92px;
-    width: 168px;
-    background: var(--paper);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow);
+    right: 16px;
+    top: 16px;
+    bottom: 18px;
+    width: 304px;
+    background:
+        linear-gradient(180deg, rgba(251, 246, 236, 0.97), rgba(244, 237, 224, 0.94)),
+        radial-gradient(circle at 30% 0%, rgba(110, 200, 224, 0.18), transparent 46%);
+    border: 1px solid rgba(27, 91, 168, 0.14);
+    border-radius: 24px;
+    box-shadow: var(--shadow-lg);
     z-index: 10;
-    padding: 6px 6px 6px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    min-height: 200px;
+    gap: 14px;
 }
-
-#palette-tabs {
+.forge-head,
+.tower-title,
+.mana-top,
+.hud-actions {
     display: flex;
-    gap: 2px;
-    padding: 0 2px 4px;
-    border-bottom: 1px solid var(--line);
-    margin-bottom: 6px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
-#palette-tabs::-webkit-scrollbar { display: none; }
-.tab {
-    border: 0;
-    background: transparent;
-    padding: 4px 6px;
-    border-radius: 6px 6px 0 0;
-    font: inherit;
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--muted);
-    cursor: pointer;
-    text-transform: uppercase;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.tab:hover { color: var(--ink-soft); background: var(--cream-2); }
-.tab.active {
+.eyebrow {
+    display: block;
     color: var(--cobalt);
-    border-bottom: 2px solid var(--cobalt);
-    margin-bottom: -1px;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
 }
-
-#palette-grid {
+.forge-head h2 {
+    margin: 2px 0 0;
+    font-size: 20px;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+}
+.forge-cost {
+    padding: 7px 9px;
+    border-radius: 999px;
+    background: var(--cobalt);
+    color: var(--paper);
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.gem-list {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 2px 2px 4px;
-    scroll-behavior: smooth;
-    scrollbar-width: thin;
-    flex: 1 1 auto;
-    align-content: start;
+    grid-template-columns: 1fr;
+    gap: 8px;
 }
-#palette-grid::-webkit-scrollbar { width: 4px; }
-#palette-grid::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
-
-.swatch {
-    background: var(--cream);
-    border-radius: 8px;
-    padding: 4px 3px 3px;
-    border: 2px solid transparent;
+.gem-choice {
+    border: 1px solid rgba(27, 91, 168, 0.12);
+    background: rgba(255, 248, 226, 0.62);
+    border-radius: 16px;
+    padding: 9px 10px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
     cursor: pointer;
-    text-align: center;
-    user-select: none;
-    transition: transform 0.05s ease, border-color 0.15s ease, background 0.15s ease;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    transition: transform 0.08s ease, background 0.16s ease, border-color 0.16s ease;
 }
-.swatch:hover { background: #f6ecd5; transform: translateY(-1px); }
-.swatch.selected {
+.gem-choice:hover { transform: translateY(-1px); background: #fff8e6; }
+.gem-choice.selected {
     border-color: var(--cobalt);
-    background: var(--cobalt-light);
+    background: linear-gradient(90deg, rgba(214, 230, 246, 0.92), rgba(255, 248, 226, 0.72));
 }
-.swatch canvas, .swatch img {
-    width: 38px;
-    height: 38px;
-    image-rendering: pixelated;
-    object-fit: contain;
-    pointer-events: none;
+.gem-chip {
+    width: 28px;
+    height: 28px;
+    display: inline-block;
+    transform: rotate(45deg);
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--gem), var(--gem-deep));
+    box-shadow: inset 4px 4px 0 rgba(255,255,255,0.30), 0 2px 7px rgba(40,28,10,0.18);
+    flex-shrink: 0;
 }
-.swatch .name {
-    font-size: 9px;
-    font-weight: 600;
+.gem-chip.small { width: 22px; height: 22px; border-radius: 5px; }
+.gem-copy { display: flex; flex-direction: column; gap: 1px; }
+.gem-copy strong,
+.tower-title strong { font-size: 13px; }
+.gem-copy small,
+.tower-title small { color: var(--muted); font-size: 11px; }
+.gem-key {
+    min-width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: rgba(27, 91, 168, 0.10);
+    color: var(--cobalt);
+    font-size: 11px;
+    font-weight: 900;
+}
+.forge-hint {
+    padding: 10px 11px;
+    border-radius: 14px;
+    background: rgba(27, 91, 168, 0.08);
     color: var(--ink-soft);
-    line-height: 1.1;
-    height: 20px;
-    display: flex;
-    align-items: center;
+    font-size: 12px;
+    line-height: 1.35;
+}
+.tower-card {
+    margin-top: auto;
+    padding: 13px;
+    border-radius: 18px;
+    background: rgba(255, 248, 226, 0.72);
+    border: 1px solid rgba(196, 180, 156, 0.55);
+    min-height: 164px;
+}
+.tower-card p {
+    margin: 10px 0 0;
+    color: var(--ink-soft);
+    font-size: 12px;
+    line-height: 1.35;
+}
+.empty-title { font-weight: 850; color: var(--cobalt); }
+.tower-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 12px;
+}
+.tower-stats span {
+    padding: 7px 6px;
+    border-radius: 12px;
+    background: rgba(244, 237, 224, 0.86);
+    color: var(--muted);
+    font-size: 10px;
     text-align: center;
-    overflow: hidden;
+}
+.tower-stats b { display: block; color: var(--ink); font-size: 13px; }
+.combine-note {
+    margin-top: 10px;
+    color: var(--cobalt);
+    font-size: 12px;
+    font-weight: 800;
+}
+.forge-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 0.72fr;
+    gap: 8px;
+}
+.panel-btn,
+.hud-btn {
+    border: 0;
+    border-radius: 13px;
+    padding: 10px 11px;
+    background: var(--cream-2);
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 850;
+    cursor: pointer;
+    transition: transform 0.06s ease, background 0.15s ease, color 0.15s ease;
+}
+.panel-btn:hover,
+.hud-btn:hover { transform: translateY(-1px); background: #fff8e6; }
+.panel-btn.primary,
+.hud-btn.primary,
+.panel-btn.active {
+    background: var(--cobalt);
+    color: var(--paper);
+}
+.panel-btn:disabled,
+.hud-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+    transform: none;
 }
 
-/* ── HUD (right side) ─────────────────────────────────────────── */
+/* ── Defense HUD ──────────────────────────────────────────────── */
 
 #hud {
     position: fixed;
-    right: 12px;
-    bottom: 12px;
-    width: 168px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px 8px;
-    background: var(--paper);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow);
-    padding: 6px 8px;
+    left: 50%;
+    top: 16px;
+    transform: translateX(-50%);
+    width: min(560px, calc(100vw - 390px));
+    display: grid;
+    grid-template-columns: 1.2fr 1fr auto;
+    align-items: stretch;
+    gap: 10px;
     z-index: 10;
-    font-size: 11px;
 }
-.hud-row { display: flex; align-items: center; gap: 5px; }
-.hud-clock {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-weight: 700;
-    font-size: 11px;
-    color: var(--ink);
+.mana-card,
+.wave-card,
+.hud-actions {
+    background: rgba(251, 246, 236, 0.94);
+    border: 1px solid rgba(27, 91, 168, 0.12);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 10px 12px;
+    backdrop-filter: blur(9px);
 }
-.sun-icon {
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 50% 50%, #ffc24a 0 35%, #f0a623 36% 60%, transparent 61%);
-    box-shadow: 0 0 5px rgba(240, 166, 35, 0.5);
-    position: relative;
+.mana-top span {
+    color: var(--cobalt);
+    font-size: 12px;
+    font-weight: 900;
 }
-
-.hud-toggles {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 4px 8px;
-    width: 100%;
-    margin-top: 4px;
-    padding-top: 5px;
-    border-top: 1px solid var(--line);
+.mana-top strong { font-size: 13px; }
+.mana-bar {
+    height: 9px;
+    margin-top: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(196, 180, 156, 0.42);
 }
-.toggle {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+#mana-fill {
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--cobalt), var(--water), #e5c065);
+    transition: width 0.16s ease;
+}
+.mana-sub {
+    margin-top: 5px;
+    color: var(--muted);
     font-size: 10px;
-    color: var(--ink-soft);
-    cursor: pointer;
-    user-select: none;
+    font-weight: 700;
+}
+.wave-card {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.wave-card strong {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
     white-space: nowrap;
 }
-.toggle input { display: none; }
-.toggle .switch {
-    width: 22px;
-    height: 12px;
-    background: #d8d2c4;
-    border-radius: 999px;
-    position: relative;
-    transition: background 0.15s ease;
-    flex-shrink: 0;
+.hud-actions {
+    padding: 8px;
 }
-.toggle .switch::after {
-    content: '';
-    position: absolute;
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: #fff;
-    top: 2px; left: 2px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    transition: transform 0.15s ease;
-}
-.toggle input:checked + .switch { background: #6ec07a; }
-.toggle input:checked + .switch::after { transform: translateX(10px); }
-
-.hud-layers {
-    display: none;
-}
+.hud-btn { min-width: 76px; padding: 9px 10px; }
 
 /* ── Instructions panel ────────────────────────────────────────── */
 
@@ -553,208 +613,19 @@ html, body {
     transform: translate(-50%, 0);
 }
 
-/* ── Responsive: tablet (≤900px) ──────────────────────────────── */
+/* ── Desktop compression ──────────────────────────────────────── */
 
-@media (max-width: 900px) {
-    #palette {
-        width: calc(100vw - 32px);
-        right: 16px;
-        top: auto;
-        bottom: calc(16px + env(safe-area-inset-bottom));
-        height: 180px;
-    }
-    #palette-grid {
-        grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
-    }
-    /* HUD is duplicate info on small screens — palette dominates the
-       bottom edge already. The compact controls badge stays so the
-       cheatsheet is still discoverable on touch / portrait layouts;
-       it lifts up to clear the bottom palette. */
-    #hud { display: none; }
-    #instructions {
-        bottom: calc(180px + 24px + env(safe-area-inset-bottom));
-    }
-    /* Open state on narrow screens: cap the height so the cheatsheet
-       can scroll instead of pushing offscreen. */
-    #instructions[open] .ins-grid {
-        max-height: 50vh;
-        overflow-y: auto;
-    }
+@media (max-width: 1180px) {
+    #palette { width: 284px; }
+    #hud { width: min(520px, calc(100vw - 360px)); grid-template-columns: 1fr 1fr; }
+    .hud-actions { grid-column: 1 / -1; justify-content: center; }
+    .title-text p { display: none; }
 }
 
-/* ── Responsive: phone portrait (≤640px) ──────────────────────── */
-
-/* Below 640px we're almost certainly on a phone in portrait. The
-   redesign here optimises for the realities of one-thumb operation
-   on a small screen:
-     • The title card collapses to logo + short name to reclaim space.
-     • The toolbar shrinks to icon-only and tucks against the safe-area
-       inset on the left.
-     • The palette becomes a full-width bottom sheet with bigger swatches.
-     • The controls badge uses a 44px touch target and floats above the
-       palette out of thumb-reach so it isn't tapped accidentally. */
-
-@media (max-width: 640px) {
-    :root {
-        --edge-gap: 10px;
-        --title-card-height: 52px;
-    }
-
-    /* Compact title card: logo + just the headline, subtitle hidden
-       (it's prose, not a tool). Anchor with safe-area inset so the
-       iPhone notch doesn't sit on top of the title text. */
-    #title-card {
-        top: calc(10px + env(safe-area-inset-top));
-        left: calc(10px + env(safe-area-inset-left));
-        padding: 8px 12px 8px 8px;
-        gap: 8px;
-        border-radius: var(--radius-sm);
-    }
-    .title-logo {
-        width: 36px;
-        height: 36px;
-        border-radius: 8px;
-    }
-    .title-logo::before { width: 22px; height: 12px; top: 6px; }
-    .title-logo::after  { width: 3px; height: 12px; top: 18px; }
-    .title-text h1 { font-size: 15px; line-height: 1.1; }
-    .title-text p  { display: none; }
-
-    /* Toolbar: drop the labels (icons are already self-evident at this
-       size) and tighten everything so it doesn't crowd the canvas.
-       Each tool is still ≥44×44 touch target — Apple/Material guideline
-       minimum — and the icon now visually fills the button instead of
-       hiding in the middle of it. */
-    #toolbar {
-        top: calc(10px + env(safe-area-inset-top) + var(--title-card-height) + 8px);
-        left: calc(8px + env(safe-area-inset-left));
-        padding: 6px 5px;
-        gap: 4px;
-        border-radius: var(--radius-sm);
-    }
-    .tool {
-        width: 50px;
-        padding: 7px 4px;
-        gap: 2px;
-    }
-    .tool .ti { width: 32px; height: 32px; }
-    .tool span.label { display: none; }
-
-    /* Palette: full-width bottom sheet, taller, larger swatches sized
-       for fingertips. Sits above the iOS home indicator. */
-    #palette {
-        left: calc(8px + env(safe-area-inset-left));
-        right: calc(8px + env(safe-area-inset-right));
-        width: auto;
-        bottom: calc(8px + env(safe-area-inset-bottom));
-        height: 200px;
-        padding: 4px 6px 6px;
-    }
-    #palette-tabs {
-        gap: 4px;
-        padding: 2px 2px 4px;
-    }
-    .tab {
-        font-size: 11px;
-        padding: 6px 10px;
-        min-height: 32px;
-    }
-    #palette-grid {
-        grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-        gap: 6px;
-    }
-    .swatch { padding: 6px 4px 4px; min-height: 78px; }
-    .swatch canvas, .swatch img { width: 44px; height: 44px; }
-    .swatch .name { font-size: 10px; height: 22px; }
-
-    /* Controls badge: bigger target, lifted above the palette sheet,
-       and with the open panel scrollable so a long cheatsheet doesn't
-       spill off the top of the screen. */
-    #instructions {
-        left: calc(8px + env(safe-area-inset-left));
-        bottom: calc(200px + 16px + env(safe-area-inset-bottom));
-        max-width: calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right));
-    }
-    .ins-summary {
-        padding: 10px 14px 10px 10px;
-        min-height: 44px;
-    }
-    .ins-badge { width: 26px; height: 26px; font-size: 14px; }
-    .ins-summary-hint { display: none; }
-    #instructions[open] .ins-grid {
-        max-height: 40vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Toast clears the safe-area + title-card on phones. */
-    #toast {
-        top: calc(env(safe-area-inset-top) + 8px);
-        font-size: 12px;
-        padding: 7px 14px;
-    }
-}
-
-/* ── Responsive: very small phones (≤380px) ───────────────────── */
-
-/* On a 360-class device the bottom palette + toolbar would otherwise
-   eat the canvas. Tighten further: 5-tool grid that wraps, smaller
-   palette swatches. */
-@media (max-width: 380px) {
-    .tool { width: 46px; padding: 6px 3px; }
-    .tool .ti { width: 28px; height: 28px; }
-    #palette { height: 184px; }
-    #palette-grid { grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); }
-    .swatch canvas, .swatch img { width: 38px; height: 38px; }
-    #instructions { bottom: calc(184px + 14px + env(safe-area-inset-bottom)); }
-}
-
-/* ── Responsive: phone landscape ──────────────────────────────── */
-
-/* Landscape on a phone (short height, wide layout): bring the palette
-   back to the right side as a slim column instead of eating the bottom
-   third of the screen, and shrink the title back even further. */
-@media (max-height: 480px) and (orientation: landscape) {
-    #title-card {
-        padding: 6px 10px 6px 6px;
-    }
-    .title-logo { width: 32px; height: 32px; }
-    .title-text h1 { font-size: 14px; }
-    .title-text p  { display: none; }
-
-    #toolbar {
-        top: calc(8px + env(safe-area-inset-top));
-        left: calc(8px + env(safe-area-inset-left));
-        padding: 5px 4px;
-        gap: 3px;
-    }
-    .tool { width: 44px; padding: 6px 3px; }
-    .tool .ti { width: 26px; height: 26px; }
-    .tool span.label { display: none; }
-
-    #palette {
-        top: calc(8px + env(safe-area-inset-top));
-        right: calc(8px + env(safe-area-inset-right));
-        bottom: calc(8px + env(safe-area-inset-bottom));
-        left: auto;
-        width: 200px;
-        height: auto;
-    }
-    #palette-grid { grid-template-columns: repeat(2, 1fr); }
-    #instructions {
-        bottom: calc(8px + env(safe-area-inset-bottom));
-        left: calc(8px + env(safe-area-inset-left));
-    }
-}
-
-/* ── Coarse-pointer (touch device) cheatsheet swap ────────────── */
-
-/* On any pointer-coarse device (phones, tablets, touch laptops in
-   tablet mode) the keyboard shortcuts are useless — swap to the
-   touch-gesture cheatsheet. Pure CSS, no JS detection needed. */
-@media (pointer: coarse) {
-    .ins-grid--mouse { display: none; }
-    .ins-grid--touch { display: grid; }
-    /* Touch devices often have a crosshair-incompatible cursor. */
-    #game-canvas { cursor: default; }
+@media (max-height: 720px) {
+    #palette { gap: 10px; padding: 12px; }
+    .gem-list { gap: 6px; }
+    .gem-choice { padding: 7px 8px; }
+    .tower-card { min-height: 130px; }
+    .tower-card p { display: none; }
 }

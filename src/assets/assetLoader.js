@@ -128,7 +128,7 @@ function buildContactPoints(srcCanvas, displayW, displayH) {
     if (!srcCanvas || !srcCanvas.width || !srcCanvas.height) return [];
     const w = srcCanvas.width;
     const h = srcCanvas.height;
-    const ctx = srcCanvas.getContext('2d');
+    const ctx = srcCanvas.getContext('2d', { willReadFrequently: true });
     if (!ctx) return [];
 
     let data;
@@ -219,6 +219,7 @@ export async function loadAssets(onProgress = () => {}) {
                     tileLike:  entry.tileLike === true,
                     fitCell:   entry.fitCell === true,
                     flatBase:  entry.flatBase === true,
+                    sourcePatchScale: entry.sourcePatchScale,
                 });
                 record.source = 'image';
                 imageCount++;

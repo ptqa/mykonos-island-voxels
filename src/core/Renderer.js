@@ -37,6 +37,8 @@ import { CONFIG } from '../config.js';
 import { cellToScreen } from '../grid/IsoGrid.js';
 import { getAsset } from '../assets/assetLoader.js';
 import { ASSET_INDEX } from '../assets/assetManifest.js';
+import { ENEMY_TYPES } from '../data/enemies.js';
+import { GEM_GRADES, GEM_TYPES } from '../data/gems.js';
 
 const TW = CONFIG.tile.w;
 const TH = CONFIG.tile.h;
@@ -82,6 +84,7 @@ export class Renderer {
         this.ctx = canvas.getContext('2d', { alpha: true });
         this.camera = camera;
         this.tileMap = tileMap;
+        this.gameplay = null;
 
         // Visibility toggles
         this.showGrid = false;
@@ -283,12 +286,14 @@ export class Renderer {
         // units so the browser does the high-quality downsample as part
         // of the same hardware-resampled draw.
         if (this._terrainCanvas)  ctx.drawImage(this._terrainCanvas,  wb.x, wb.y, wb.w, wb.h);
+        this._drawDefenseGroundOverlay();
         if (this.showGrid)        this._drawGrid();
         if (this._objectsCanvas)  ctx.drawImage(this._objectsCanvas,  wb.x, wb.y, wb.w, wb.h);
 
         // 3. Live overlays: actively-animating objects/tiles + hover +
         //    preview ghost. Sorted together so depth is sane.
         this._drawLiveOverlay();
+        this._drawDefenseDynamicOverlay();
 
         ctx.restore();
 
@@ -713,6 +718,257 @@ export class Renderer {
         for (const item of items) item.draw();
     }
 
+    /* ── Tower-defense overlays ───────────────────────────────── */
+
+    _drawDefenseGroundOverlay() {
+        const gp = this.gameplay;
+        if (!gp) return;
+        const ctx = this.ctx;
+        ctx.save();
+        this._drawDefensePath(gp);
+        for (const pad of gp.level.buildPads) this._drawBuildPad(gp, pad);
+        const selected = gp.selectedTower;
+        if (selected && gp.showRangeOverlay) this._drawTowerRange(gp, selected);
+        ctx.restore();
+    }
+
+    _drawDefenseDynamicOverlay() {
+        const gp = this.gameplay;
+        if (!gp) return;
+        const ctx = this.ctx;
+        ctx.save();
+        for (const tower of gp.towers) this._drawTowerGem(gp, tower);
+        const enemies = [...gp.enemies].sort((a, b) => (a.x + a.y) - (b.x + b.y));
+        for (const enemy of enemies) this._drawEnemy(enemy);
+        for (const projectile of gp.projectiles) this._drawProjectile(projectile);
+        for (const particle of gp.particles) this._drawParticle(particle);
+        ctx.restore();
+    }
+
+    _drawDefensePath(gp) {
+        const ctx = this.ctx;
+        if (!gp.level.path.length) return;
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 10 / this.camera.zoom;
+        ctx.strokeStyle = gp.waveActive ? 'rgba(229, 192, 101, 0.30)' : 'rgba(27, 91, 168, 0.12)';
+        ctx.beginPath();
+        for (let i = 0; i < gp.level.path.length; i++) {
+            const p = gp.level.path[i];
+            const s = cellToScreen(p.gx + 0.5, p.gy + 0.5);
+            if (i === 0) ctx.moveTo(s.x, s.y);
+            else ctx.lineTo(s.x, s.y);
+        }
+        ctx.stroke();
+        ctx.lineWidth = 2 / this.camera.zoom;
+        ctx.strokeStyle = 'rgba(255, 248, 226, 0.42)';
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    _drawBuildPad(gp, pad) {
+        const ctx = this.ctx;
+        const occupied = !!gp.towerAt(pad.gx, pad.gy);
+        const hover = this.hoverCell && this.hoverCell.gx === pad.gx && this.hoverCell.gy === pad.gy;
+        const c = cellToScreen(pad.gx + 0.5, pad.gy + 0.5);
+        ctx.save();
+        ctx.translate(c.x, c.y + 2);
+        ctx.lineWidth = (hover ? 2.6 : 1.8) / this.camera.zoom;
+        ctx.fillStyle = occupied ? 'rgba(255, 248, 226, 0.20)' : 'rgba(214, 230, 246, 0.28)';
+        ctx.strokeStyle = occupied ? 'rgba(229, 192, 101, 0.80)' : 'rgba(27, 91, 168, 0.72)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, TW * 0.28, TH * 0.24, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        if (!occupied) {
+            ctx.strokeStyle = 'rgba(255, 248, 226, 0.72)';
+            ctx.lineWidth = 1 / this.camera.zoom;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, TW * 0.17, TH * 0.14, 0, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    _drawTowerRange(gp, tower) {
+        const ctx = this.ctx;
+        const gem = GEM_TYPES[tower.gem.type];
+        const center = gp.towerCenter(tower);
+        const range = gp.towerRange(tower);
+        ctx.save();
+        ctx.beginPath();
+        for (let i = 0; i <= 96; i++) {
+            const a = (i / 96) * Math.PI * 2;
+            const p = cellToScreen(center.x + Math.cos(a) * range, center.y + Math.sin(a) * range);
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
+        }
+        ctx.closePath();
+        ctx.fillStyle = `${hexToRgba(gem.color, 0.10)}`;
+        ctx.strokeStyle = `${hexToRgba(gem.deepColor, 0.48)}`;
+        ctx.lineWidth = 1.5 / this.camera.zoom;
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    _drawTowerGem(gp, tower) {
+        const ctx = this.ctx;
+        const gem = GEM_TYPES[tower.gem.type];
+        const grade = GEM_GRADES[tower.gem.grade];
+        const c = cellToScreen(tower.gx + 0.5, tower.gy + 0.5);
+        const selected = gp.selectedTowerId === tower.id;
+        ctx.save();
+        ctx.translate(c.x, c.y - 30);
+        ctx.fillStyle = 'rgba(40, 28, 10, 0.18)';
+        ctx.beginPath();
+        ctx.ellipse(0, 12, 12, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.rotate(Math.PI / 4);
+        const size = selected ? 12 : 10;
+        ctx.fillStyle = gem.color;
+        ctx.strokeStyle = selected ? '#fff8e6' : gem.deepColor;
+        ctx.lineWidth = (selected ? 2.4 : 1.4) / this.camera.zoom;
+        ctx.fillRect(-size / 2, -size / 2, size, size);
+        ctx.strokeRect(-size / 2, -size / 2, size, size);
+        ctx.rotate(-Math.PI / 4);
+        ctx.fillStyle = '#2b2a26';
+        ctx.font = `700 ${9 / this.camera.zoom}px Inter, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(grade.label, 0, 1);
+        ctx.restore();
+    }
+
+    _drawEnemy(enemy) {
+        const ctx = this.ctx;
+        const type = ENEMY_TYPES[enemy.type] ?? ENEMY_TYPES.drifter;
+        const c = cellToScreen(enemy.x, enemy.y);
+        const scale = enemy.type === 'colossus' ? 1.42 : enemy.type === 'swarm' ? 0.78 : 1;
+        ctx.save();
+        ctx.translate(c.x, c.y + 2);
+        ctx.fillStyle = 'rgba(40, 28, 10, 0.22)';
+        ctx.beginPath();
+        ctx.ellipse(0, 10, 15 * scale, 5 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = type.shell;
+        ctx.strokeStyle = type.color;
+        ctx.lineWidth = 2 / this.camera.zoom;
+        ctx.beginPath();
+        ctx.ellipse(0, -1, 11 * scale, 8 * scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = type.color;
+        ctx.beginPath();
+        ctx.arc(-4 * scale, -4 * scale, 2.3 * scale, 0, Math.PI * 2);
+        ctx.arc(5 * scale, -3 * scale, 2 * scale, 0, Math.PI * 2);
+        ctx.fill();
+        if (enemy.armor > 0) {
+            ctx.strokeStyle = 'rgba(141, 136, 120, 0.85)';
+            ctx.lineWidth = 3 / this.camera.zoom;
+            ctx.beginPath();
+            ctx.arc(0, -1, 13 * scale, Math.PI * 1.05, Math.PI * 1.9);
+            ctx.stroke();
+        }
+        if (enemy.slowTime > 0) {
+            ctx.strokeStyle = 'rgba(142, 212, 232, 0.85)';
+            ctx.lineWidth = 1.8 / this.camera.zoom;
+            ctx.beginPath();
+            ctx.ellipse(0, 9, 18 * scale, 6 * scale, 0, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        if (enemy.poisonTime > 0) {
+            ctx.fillStyle = 'rgba(111, 159, 88, 0.80)';
+            ctx.beginPath();
+            ctx.arc(9 * scale, -9 * scale, 2.4 * scale, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        const hp = Math.max(0, enemy.hp / enemy.maxHp);
+        ctx.fillStyle = 'rgba(251, 246, 236, 0.92)';
+        ctx.fillRect(-15 * scale, -20 * scale, 30 * scale, 4 * scale);
+        ctx.fillStyle = hp > 0.4 ? '#3d7355' : '#c4622e';
+        ctx.fillRect(-15 * scale, -20 * scale, 30 * scale * hp, 4 * scale);
+        ctx.restore();
+    }
+
+    _drawProjectile(projectile) {
+        const ctx = this.ctx;
+        const alpha = Math.max(0, 1 - projectile.t);
+        ctx.save();
+        ctx.globalAlpha *= alpha;
+        ctx.strokeStyle = projectile.color;
+        ctx.fillStyle = projectile.color;
+        ctx.lineCap = 'round';
+        if (projectile.kind === 'chain') {
+            ctx.lineWidth = 2.4 / this.camera.zoom;
+            for (const segment of projectile.segments) {
+                const a = cellToScreen(segment.from.x, segment.from.y);
+                const b = cellToScreen(segment.to.x, segment.to.y);
+                ctx.beginPath();
+                ctx.moveTo(a.x, a.y - 12);
+                ctx.lineTo(b.x, b.y - 12);
+                ctx.stroke();
+            }
+            ctx.restore();
+            return;
+        }
+        const a = cellToScreen(projectile.from.x, projectile.from.y);
+        const b = cellToScreen(projectile.to.x, projectile.to.y);
+        const t = Math.min(1, projectile.t * 1.2);
+        const x = a.x + (b.x - a.x) * t;
+        const y = (a.y - 28) + ((b.y - 10) - (a.y - 28)) * t;
+        ctx.lineWidth = (projectile.critical ? 3 : 2) / this.camera.zoom;
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y - 28);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x, y, projectile.critical ? 5 : 3.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    _drawParticle(particle) {
+        const ctx = this.ctx;
+        const c = cellToScreen(particle.x, particle.y);
+        const t = 1 - particle.life / particle.maxLife;
+        ctx.save();
+        ctx.globalAlpha *= Math.max(0, 1 - t);
+        if (particle.kind === 'ring') {
+            ctx.strokeStyle = particle.color;
+            ctx.lineWidth = 2 / this.camera.zoom;
+            ctx.beginPath();
+            for (let i = 0; i <= 48; i++) {
+                const a = (i / 48) * Math.PI * 2;
+                const r = particle.radius * (0.65 + t * 0.55);
+                const p = cellToScreen(particle.x + Math.cos(a) * r, particle.y + Math.sin(a) * r);
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            }
+            ctx.stroke();
+            ctx.restore();
+            return;
+        }
+        if (particle.kind === 'burst') {
+            ctx.strokeStyle = particle.color;
+            ctx.lineWidth = 2 / this.camera.zoom;
+            ctx.beginPath();
+            ctx.arc(c.x, c.y - 10, 8 + t * 18, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        const y = c.y - 24 - t * 26;
+        ctx.font = `${particle.large ? 800 : 700} ${(particle.large ? 14 : 11) / this.camera.zoom}px Inter, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.lineWidth = 3 / this.camera.zoom;
+        ctx.strokeStyle = 'rgba(251, 246, 236, 0.92)';
+        ctx.fillStyle = particle.color;
+        ctx.strokeText(particle.text, c.x, y);
+        ctx.fillText(particle.text, c.x, y);
+        ctx.restore();
+    }
+
     _drawAnimatingObject(obj, t) {
         const ctx = this.ctx;
         const asset = getAsset(obj.assetId);
@@ -984,4 +1240,15 @@ export class Renderer {
         }
         ctx.restore();
     }
+}
+
+function hexToRgba(hex, alpha) {
+    const raw = hex.replace('#', '');
+    const n = Number.parseInt(raw.length === 3
+        ? raw.split('').map(ch => ch + ch).join('')
+        : raw, 16);
+    const r = (n >> 16) & 255;
+    const g = (n >> 8) & 255;
+    const b = n & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }

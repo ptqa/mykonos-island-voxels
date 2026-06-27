@@ -5,7 +5,7 @@
  */
 
 import { Toolbar } from './Toolbar.js';
-import { AssetPalette } from './AssetPalette.js';
+import { ForgePanel } from './ForgePanel.js';
 import { HUD } from './HUD.js';
 import { playUiClick } from './Audio.js';
 
@@ -13,11 +13,7 @@ export class UIManager {
     constructor(game) {
         this.game = game;
         this.toolbar = new Toolbar(document.getElementById('toolbar'), game);
-        this.palette = new AssetPalette(
-            document.getElementById('palette-tabs'),
-            document.getElementById('palette-grid'),
-            game,
-        );
+        this.forge = new ForgePanel(document.getElementById('palette'), game);
         this.hud = new HUD(game);
         this.toast = document.getElementById('toast');
 
@@ -31,13 +27,14 @@ export class UIManager {
 
         // Expose for sibling modules
         game.toolbar = this.toolbar;
-        game.palette = this.palette;
+        game.forge = this.forge;
         game.hud = this.hud;
     }
 
     update() {
         this.toolbar.update();
-        this.palette.update();
+        this.forge.update();
+        this.hud.update();
     }
 
     showToast(text, ms = 1600) {
